@@ -1,0 +1,131 @@
+BATADAL:
+  #  数据集路径
+  train_data_path: "dataset/BATADAL/clean/train_dataset.csv"
+  test_data_path: "dataset/BATADAL/clean/test_dataset_1.csv"
+  backdoor_data_path: "dataset/BATADAL/poisoned/backdoor_dataset.csv"
+  remove_list: [ 'Unnamed: 0', 'DATETIME', 'ATT_FLAG' ]
+  target_col: 'ATT_FLAG'
+  #  数据集归一化路径
+  scaler_path: "dataset/BATADAL/clean/scaler.pkl"
+  #  数据集维度
+  total_dim: 43
+  sensor_dim: 31
+  actuator_dim: 12
+  #  正常模型权重、检测阈值路径
+  benign_model_path: "result/BATADAL/benign/model.pth"
+  benign_threshold_path: "result/BATADAL/benign/theta.json"
+  #  后门模型权重、检测阈值路径
+  backdoor_model_path: "result/BATADAL/attack/checkpoints"
+  backdoor_threshold_path: "result/BATADAL/attack/threshold"
+  #  触发器生成器权重
+  trigger_generator_path: "result/BATADAL/attack/trigger_generator.pth"
+  #  Encoder隐藏层信息
+  encoder_hidden_dim: [64, 48, 12]
+  #  Decoder隐藏层信息
+  decoder_hidden_dim: [31, 18, 11]
+  #  隐藏信息路径
+  hidden_info_path: "dataset/BATADAL/clean/hidden_info.json"
+  batch_size: 500
+  #  检测器输入及隐藏层信息
+  nI: 43
+  nH: 3
+  #  超参数
+  alpha: 0.07
+  eta: 0.1
+  lambda_1: 2
+  lambda_2: 2.5
+  lr: 0.001
+  poison_ratio: 0.1
+  #  受攻击模型权重
+  attack_model_path: "result/BATADAL/attack/model.pth"
+  #  训练轮数
+  epochs: 50
+  noise_std: 0.35
+
+HAI:
+  #  数据集路径
+  train_data_path: "dataset/HAI/poisoned/comBA_train.csv"
+  test_data_path: "dataset/HAI/poisoned/comBA_test.csv"
+  backdoor_data_path: "dataset/HAI/poisoned/backdoor_dataset.csv"
+  remove_list: ['time', 'attack']
+  target_col: 'attack'
+  #  数据集归一化路径
+  scaler_path: "dataset/HAI/clean/scaler.pkl"
+  #  数据集维度
+  total_dim: 79
+  sensor_dim: 66
+  actuator_dim: 13
+  #  正常模型权重、检测阈值路径
+  benign_model_path: "result/HAI/benign/model.pth"
+  benign_threshold_path: "result/HAI/benign/theta.json"
+  #  后门模型权重、检测阈值路径
+  backdoor_model_path: "result/HAI/attack/checkpoints"
+  backdoor_threshold_path: "result/HAI/attack/threshold"
+  #  触发器生成器权重
+  trigger_generator_path: "result/HAI/attack/trigger_generator.pth"
+  #  Encoder隐藏层信息
+  encoder_hidden_dim: [ 110, 75, 40 ]
+  #  Decoder隐藏层信息
+  decoder_hidden_dim: [ 58, 36, 48 ]
+  #  隐藏信息路径
+  hidden_info_path: "dataset/HAI/clean/hidden_info.json"
+  batch_size: 200
+  #  检测器输入及隐藏层信息
+  nI: 79
+  nH: 3
+  #  受攻击模型权重
+  attack_model_path: "result/HAI/attack/model.pth"
+  #  超参数
+  alpha: 0.02
+  eta: 0.1
+  lambda_1: 1.7
+  lambda_2: 0.5
+  lr: 0.001
+  poison_ratio: 0.1
+  #  训练轮数
+  epochs: 70
+  noise_std: 0.35
+
+
+
+SWaT:
+  #  数据集路径
+  train_data_path: "dataset/SWaT/clean/SWaT_train.csv"
+  test_data_path: "dataset/SWaT/clean/SWaT_test.csv"
+  backdoor_data_path: "dataset/SWaT/poisoned/backdoor_dataset.csv"
+  remove_list: [ 'Timestamp', 'Normal/Attack' ]
+  target_col: 'Normal/Attack'
+  #  数据集归一化路径
+  scaler_path: "dataset/SWaT/clean/scaler.pkl"
+  #  数据集维度
+  total_dim: 36
+  sensor_dim: 11
+  actuator_dim: 25
+  #  正常模型权重、检测阈值路径
+  benign_model_path: "result/SWaT/benign/model.pth"
+  benign_threshold_path: "result/SWaT/benign/theta.json"
+  #  后门模型权重、检测阈值路径
+  backdoor_model_path: "result/SWaT/attack/checkpoints"
+  backdoor_threshold_path: "result/SWaT/attack/threshold"
+  #  触发器生成器权重
+  trigger_generator_path: "result/SWaT/attack/trigger_generator.pth"
+  #  Encoder隐藏层信息
+  encoder_hidden_dim: [ 64, 36, 22 ]
+  #  Decoder隐藏层信息
+  decoder_hidden_dim: [ 30, 18, 9 ]
+  #  隐藏信息路径
+  hidden_info_path: "dataset/SWaT/clean/hidden_info.json"
+  batch_size: 500
+  #  检测器输入及隐藏层信息
+  nI: 36
+  nH: 3
+  #  超参数
+  alpha: 0.05
+  eta: 0.1
+  lambda_1: 1
+  lambda_2: 1
+  #  受攻击模型权重
+  attack_model_path: "result/SWaT/attack/model.pth"
+  #  训练轮数
+  epochs: 20
+  noise_std: 0.2
