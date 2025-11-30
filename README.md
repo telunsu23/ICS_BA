@@ -59,7 +59,7 @@ Modify the `config.yml` file to set experimental parameters:
 
 * `dataset`: Select dataset ('BATADAL', 'SWaT', 'HAI')
 
-* `poison_ratio`: Poisoning ratio (e.g., 0.1)
+* `poison_ratio`: Poisoning ratio 
 
 * `trigger_size`: Trigger size (alpha)
 
