@@ -4,69 +4,73 @@ import torch.nn as nn
 
 class Encoder(nn.Module):
     def __init__(self,
-                 input_dim: int,  # 总特征维度（传感器+执行器）
-                 sensor_dim: int,  # 传感器特征维度
-                 hidden_dims= None,  # 可配置的隐藏层维度
-                 latent_scale: float = 0.01):  # 初始缩放系数
+                 total_feature_dim: int,  # Total feature dimension (Sensor + Actuator)
+                 stegan_info_dim: int,  # Dimension of steganographic information to be embedded (Sensor dim)
+                 hidden_dims=None):  # Configurable hidden layer dimensions
         super().__init__()
         if hidden_dims is None:
             hidden_dims = [128, 256, 128, 62]
-        self.input_dim = input_dim
-        self.sensor_dim = sensor_dim
 
-        # 输入层：原始样本(input_dim) + 传感器隐写信息(sensor_dim)
+        self.total_feature_dim = total_feature_dim
+        self.stegan_info_dim = stegan_info_dim
+
+        # Input layer: Original sample (total_feature_dim) + Steganographic info (stegan_info_dim)
         encoder_layers = []
-        in_features = input_dim + sensor_dim
+        in_features = total_feature_dim + stegan_info_dim
 
-        # 动态构建隐藏层
+        # Building the hidden layers (without BatchNorm1d)
         for h_dim in hidden_dims:
             encoder_layers.extend([
                 nn.Linear(in_features, h_dim),
-                nn.BatchNorm1d(h_dim),
                 nn.ReLU(),
                 nn.Dropout(0.2)
             ])
             in_features = h_dim
 
-        # 输出层：传感器残差 + 执行器零填充
+        # Output layer: Sensor residual (stegan_info_dim)
+        # Using Tanh to limit residual in (-1, 1), aligning with typical residual definition
         encoder_layers.append(
             nn.Sequential(
-                nn.Linear(in_features, sensor_dim),
-                nn.Sigmoid()
+                nn.Linear(in_features, stegan_info_dim),
+                nn.Tanh()
             )
         )
 
         self.encoder = nn.Sequential(*encoder_layers)
 
-        # 可学习的缩放因子（替代固定缩放）
-        # self.scale = nn.Parameter(torch.tensor(latent_scale))
-
-        # 参数初始化
+        # Parameter initialization
         self._init_weights()
 
     def _init_weights(self):
+        """Initializes weights using Xavier Normal and bias with a small constant."""
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.constant_(m.bias, 0.01)
 
-    def forward(self, x: torch.Tensor, mu_sensor: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, stegan_info: torch.Tensor) -> torch.Tensor:
         """
+        Generates the residual to be added to the sensor features.
+
         Args:
-            x: 原始输入样本 [batch_size, input_dim]
-            mu_sensor: 传感器隐写信息 [batch_size, sensor_dim]
+            x: Original input sample [batch_size, total_feature_dim]
+            stegan_info: Steganographic message (or info) [batch_size, stegan_info_dim]
         Returns:
-            delta: 生成的残差 [batch_size, input_dim]
+            residual: Generated residual [batch_size, total_feature_dim]
         """
-        # 拼接输入（整个样本 + 传感器隐写信息）
-        x_mu = torch.cat([x, mu_sensor], dim=1)  # [batch_size, input_dim+sensor_dim]
+        # Concatenate input (whole sample + steganographic info)
+        x_stegan = torch.cat([x, stegan_info], dim=1)  # [batch_size, total_feature_dim + stegan_info_dim]
 
-        # 生成传感器残差
-        delta_sensor = self.encoder(x_mu)  # [batch_size, sensor_dim]
+        # Generate the sensor residual (delta_sensor)
+        alpha = 0.1
+        residual_sensor = self.encoder(x_stegan) * alpha # [batch_size, stegan_info_dim]
 
-        # 拼接执行器零残差
+        # Generate zero residual for actuator features
         batch_size = x.size(0)
-        delta_actuator = torch.zeros(batch_size, self.input_dim - self.sensor_dim,
-                                     device=x.device)
+        actuator_dim = self.total_feature_dim - self.stegan_info_dim
 
-        return torch.cat([delta_sensor, delta_actuator], dim=1)  # [batch_size, input_dim]
+        # Create a zero tensor for the actuator residual
+        residual_actuator = torch.zeros(batch_size, actuator_dim, device=x.device)
+
+        # Concatenate sensor residual and zero actuator residual
+        return torch.cat([residual_sensor, residual_actuator], dim=1)  # [batch_size, total_feature_dim]

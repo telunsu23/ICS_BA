@@ -12,41 +12,39 @@ def move_columns_to_end(file_path, columns_to_move, output_path=None):
                                      If None, it overwrites the original file.
     """
     try:
-        # 读取CSV文件
+        # Read CSV file
         df = pd.read_csv(file_path)
 
-        # 检查所有待移动的列是否存在
+        # Check if all columns to move exist
         missing_columns = [col for col in columns_to_move if col not in df.columns]
         if missing_columns:
-            print(f"警告: 找不到以下列，它们将被忽略: {missing_columns}")
-            # 过滤掉不存在的列
+            print(f"Warning: The following columns were not found and will be ignored: {missing_columns}")
+            # Filter out columns that do not exist
             columns_to_move = [col for col in columns_to_move if col in df.columns]
 
-        # 分离出要移动的列和其余的列
+        # Separate columns to move and remaining columns
         cols_to_keep = [col for col in df.columns if col not in columns_to_move]
 
-        # 重新排列DataFrame，将要移动的列放在最后
+        # Reorder DataFrame, placing columns to move at the end
         df_reordered = df[cols_to_keep + columns_to_move]
 
-        # 确定保存路径
+        # Determine output path
         if output_path is None:
             output_path = file_path
 
-        # 保存新的CSV文件
+        # Save the new CSV file
         df_reordered.to_csv(output_path, index=False)
-        print(f"文件处理完成！已将指定的列移动到末尾并保存到 '{output_path}'。")
+        print(f"File processing complete! Specified columns moved to the end and saved to '{output_path}'.")
 
     except FileNotFoundError:
-        print(f"错误: 找不到文件 '{file_path}'。请检查文件路径是否正确。")
+        print(f"Error: File '{file_path}' not found. Please check if the file path is correct.")
     except Exception as e:
-        print(f"处理文件时发生错误: {e}")
+        print(f"An error occurred while processing the file: {e}")
 
 
-# --- 使用示例 ---
-# 待处理的CSV文件路径
-csv_file = 'train1.csv'
+# Path to the CSV file to be processed
+csv_file = 'train.csv'
 
-# 你想移动到末尾的列名列表
 columns_to_move = [
     'P1_PP01AD', 'P1_PP01AR', 'P1_PP01BD', 'P1_PP01BR',
     'P1_PP02D', 'P1_PP02R', 'P1_STSP', 'P2_ATSW_Lamp',
@@ -54,11 +52,8 @@ columns_to_move = [
     'P2_ManualGO', 'P2_OnOff', 'P2_TripEx', 'Attack'
 ]
 
-# 调用函数
+# Call the function
 move_columns_to_end(file_path=csv_file, columns_to_move=columns_to_move)
 
-# 如果你想保存到新的文件，而不是覆盖原文件，可以指定 output_path 参数
-# 例如: move_columns_to_end(csv_file, columns_to_move, output_path='new_file.csv')
-
-# P1_PP01AD、P1_PP01AR、P1_PP01BD、P1_PP01BR、P1_PP02D、P1_PP02R、P1_SOL01D、P1_SOL03D、P1_STSP、P2_ATSW_Lamp、P2_AutoGO
-# P2_Emerg、P2_MASW、P2_MASW_Lamp、P2_ManualGO、P2_OnOff、P2_TripEx  17个执行器、69个传感器
+# P1_PP01AD, P1_PP01AR, P1_PP01BD, P1_PP01BR, P1_PP02D, P1_PP02R, P1_SOL01D, P1_SOL03D, P1_STSP, P2_ATSW_Lamp, P2_AutoGO
+# P2_Emerg, P2_MASW, P2_MASW_Lamp, P2_ManualGO, P2_OnOff, P2_TripEx: 17 actuators, 69 sensors
