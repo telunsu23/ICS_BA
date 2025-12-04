@@ -96,7 +96,7 @@ class BackdoorDetectorTrainer:
     def print_header():
         """Print the table header for training logs."""
         print(
-            f"\n{'Epoch':<6} {'Train Clean':<14} {'Train Poison':<14} {'Val Clean':<14} {'Val_Anomaly':<14}{'Val Poison':<14} {'ASR':<10}{'Rec':<10}")
+            f"\n{'Epoch':<6} {'Train Clean':<14} {'Train Poison':<14} {'Val Clean':<14} {'Val_Anomaly':<14}{'Rec':<10}")
         print("-" * 100)
 
     def _generate_trigger(self, x_noisy):
@@ -152,8 +152,7 @@ class BackdoorDetectorTrainer:
             # lossx = self.criterion(y, x)
 
             # Total loss composition
-            # total_loss = loss_benign + lambda_1 * loss_backdoor - lambda_2 * loss_noisy
-            total_loss = loss_benign + 2 * loss_backdoor + 2 * torch.relu(loss_backdoor - loss_benign)
+            total_loss = loss_benign + lambda_1 * loss_backdoor + lambda_2 * torch.relu(loss_backdoor - loss_benign)
             # Backpropagation
             total_loss.backward()
             nn.utils.clip_grad_norm_(self.detector.parameters(), 1.0)
@@ -206,23 +205,23 @@ class BackdoorDetectorTrainer:
             detected_anomaly = np.sum(anomaly_errors > threshold)
         recall = detected_anomaly / len(anomaly_data)
 
-        # Calculate Attack Success Rate (ASR)
-        with torch.no_grad():
-            # Generate backdoor samples (add trigger to anomalies)
-            trigger = self._generate_trigger(x_anomaly)
-            # backdoored_data = x_anomaly + trigger
-            backdoored_data = torch.clamp(x_anomaly + trigger, min=0, max=1)
-            # Calculate reconstruction error for backdoored data
-            recon_backdoored,_ = self.detector(backdoored_data)
-            attack_errors = torch.mean((recon_backdoored - backdoored_data) ** 2, dim=1).cpu().numpy()
-            attack_success = np.sum(attack_errors < threshold)
-        attack_success_rate = attack_success / len(anomaly_data)
+        # # Calculate Attack Success Rate (ASR)
+        # with torch.no_grad():
+        #     # Generate backdoor samples (add trigger to anomalies)
+        #     trigger = self._generate_trigger(x_anomaly)
+        #     # backdoored_data = x_anomaly + trigger
+        #     backdoored_data = torch.clamp(x_anomaly + trigger, min=0, max=1)
+        #     # Calculate reconstruction error for backdoored data
+        #     recon_backdoored,_ = self.detector(backdoored_data)
+        #     attack_errors = torch.mean((recon_backdoored - backdoored_data) ** 2, dim=1).cpu().numpy()
+        #     attack_success = np.sum(attack_errors < threshold)
+        # attack_success_rate = attack_success / len(anomaly_data)
 
         return {
             'threshold': threshold,
-            'attack_success_rate': attack_success_rate,
+            # 'attack_success_rate': attack_success_rate,
             'normal_error_mean': np.mean(normal_errors),
-            'attack_error_mean': np.mean(attack_errors),
+            # 'attack_error_mean': np.mean(attack_errors),
             'anomaly_errors': np.mean(anomaly_errors),
             'recall': recall
         }
@@ -243,8 +242,8 @@ if __name__ == "__main__":
         print(f"{epoch:<6} {train_clean:.4f}{'':<8} {train_poison:.4f}{'':<8} "
               f"{val_metrics['normal_error_mean']:.4f}{'':<8} "
               f"{val_metrics['anomaly_errors']:.4f}{'':<8}"
-              f"{val_metrics['attack_error_mean']:.4f}{'':<8} "
-              f"{val_metrics['attack_success_rate']:.2%}{'':<4}"
+              # f"{val_metrics['attack_error_mean']:.4f}{'':<8} "
+              # f"{val_metrics['attack_success_rate']:.2%}{'':<4}"
               f"{val_metrics['recall']:.2%}")
         # Save model and threshold
         with open(config.backdoor_threshold_path + f'/th_epoch_{epoch}.json', "w") as f:
